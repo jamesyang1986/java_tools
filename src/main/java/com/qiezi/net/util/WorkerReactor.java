@@ -14,7 +14,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class WorkerReactor extends Thread {
-    private static Selector selector;
+    private Selector selector;
 
     private static final int SELECTOR_WAIT_TIME_MS = 10;
 
@@ -24,16 +24,14 @@ public class WorkerReactor extends Thread {
 
     private static Map<String, Connection> connMap = new ConcurrentHashMap<>();
 
-    static {
+
+    public WorkerReactor() {
+        super("worker-" + counter.getAndIncrement());
         try {
             selector = Selector.open();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public WorkerReactor() {
-        super("worker-" + counter.getAndIncrement());
     }
 
     public void register(SocketChannel socketChannel) {
@@ -46,9 +44,11 @@ public class WorkerReactor extends Thread {
 
     public void register(Connection connection) {
         try {
-            connection.getSocketChannel().register(selector,
+            SelectionKey key = connection.getSocketChannel().register(selector,
                     SelectionKey.OP_READ | SelectionKey.OP_WRITE
                             | SelectionKey.OP_CONNECT);
+            key.attach(connection);
+            connection.setKey(key);
         } catch (ClosedChannelException e) {
             throw new RuntimeException(e);
         }
@@ -63,9 +63,8 @@ public class WorkerReactor extends Thread {
                 Iterator<SelectionKey> keyIterator = keySet.iterator();
                 while (keyIterator.hasNext()) {
                     SelectionKey key = keyIterator.next();
-                    keyIterator.remove();
                     handleEvent(key);
-
+                    keyIterator.remove();
                 }
             } catch (IOException e) {
                 throw new RuntimeException(e);

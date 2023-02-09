@@ -24,7 +24,6 @@ public class MainReactor extends Thread {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-
     }
 
     public void register(ServerSocketChannel serverSocketChannel) {
@@ -47,9 +46,17 @@ public class MainReactor extends Thread {
                     if (key.isAcceptable()) {
                         ServerSocketChannel serverSocketChannel = (ServerSocketChannel) key.channel();
                         SocketChannel socketChannel = serverSocketChannel.accept();
-                        Connection conn = Connection.buildConnection(socketChannel, key);
-                        key.attach(conn);
-                        getWorker().register(conn);
+                        if (socketChannel != null) {
+                            socketChannel.configureBlocking(false);
+                            socketChannel.socket().setTcpNoDelay(true);
+                            socketChannel.socket().setKeepAlive(true);
+                            socketChannel.socket().setSoTimeout(1000);
+                            socketChannel.socket().setReceiveBufferSize(4096);
+                            socketChannel.socket().setSendBufferSize(4096);
+                            Connection conn = Connection.buildConnection(socketChannel, key);
+                            key.attach(conn);
+                            getWorker().register(conn);
+                        }
                     }
                 }
             } catch (IOException e) {

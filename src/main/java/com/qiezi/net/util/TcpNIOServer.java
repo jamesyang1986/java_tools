@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.ServerSocketChannel;
 
-public class TcpNioServer {
+public class TcpNIOServer {
     private MainReactor mainReactor;
     private ServerSocketChannel ss;
     private int mainNum;
@@ -40,8 +40,8 @@ public class TcpNioServer {
             return this;
         }
 
-        public TcpNioServer build() {
-            TcpNioServer tcpNioServer = new TcpNioServer();
+        public TcpNIOServer build() {
+            TcpNIOServer tcpNioServer = new TcpNIOServer();
             tcpNioServer.workerNum = this.workerNum;
             tcpNioServer.port = this.port;
             tcpNioServer.mainNum = this.mainNum;
