@@ -1,4 +1,4 @@
 package com.qiezi.ds;
 
-public class BTree {
+public class BTree<T> {
 }

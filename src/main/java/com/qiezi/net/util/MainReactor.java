@@ -1,38 +1,27 @@
 package com.qiezi.net.util;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.nio.channels.*;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class MainReactor implements Runnable {
-
-    private static Selector selector;
+public class MainReactor extends Thread {
+    private Selector selector;
     private ServerSocketChannel ss;
-
     private WorkerReactor[] workerReactors;
-
     private static final int SELECTOR_WAIT_MS_INTERVAL = 100;
 
     private AtomicLong counter = new AtomicLong(0);
 
-    static {
+    public MainReactor(ServerSocketChannel ss, WorkerReactor[] workerReactors) {
+        super("main-reactor");
         try {
+            this.ss = ss;
+            this.workerReactors = workerReactors;
             selector = Selector.open();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public MainReactor(int port, int workerNum) {
-        try {
-            ss = ServerSocketChannel.open();
-            ss.bind(new InetSocketAddress("0.0.0.0", port));
             register(ss);
-            workerReactors = new WorkerReactor[workerNum];
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
@@ -67,12 +56,10 @@ public class MainReactor implements Runnable {
                 e.printStackTrace();
             }
         }
-
     }
 
     private WorkerReactor getWorker() {
-        int index = (int) (counter.getAndIncrement()
-                % workerReactors.length);
+        int index = (int) (counter.getAndIncrement() % workerReactors.length);
         return workerReactors[index];
     }
 }

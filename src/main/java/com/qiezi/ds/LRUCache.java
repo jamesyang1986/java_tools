@@ -1,4 +1,4 @@
 package com.qiezi.ds;
 
-public class LRUCache {
+public class LRUCache<T> {
 }

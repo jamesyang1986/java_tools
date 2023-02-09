@@ -1,4 +1,4 @@
 package com.qiezi.ds;
 
-public class RedBlackTree {
+public class RedBlackTree<T> {
 }

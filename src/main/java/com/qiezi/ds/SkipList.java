@@ -1,4 +1,4 @@
 package com.qiezi.ds;
 
-public class SkipList {
+public class SkipList<T> {
 }

@@ -48,7 +48,23 @@ public class Connection {
         return port;
     }
 
+    public SelectionKey getKey() {
+        return key;
+    }
+
+    public void setKey(SelectionKey key) {
+        this.key = key;
+    }
+
     public String getEndPoint() {
         return ip + ":" + port;
+    }
+
+    public void read() {
+
+    }
+
+    public void doWrite() {
+
     }
 }

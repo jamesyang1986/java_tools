@@ -1,4 +1,4 @@
 package com.qiezi.ds;
 
-public class LinkedList {
+public class LinkedList<T> {
 }

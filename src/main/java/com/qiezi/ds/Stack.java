@@ -1,4 +1,4 @@
 package com.qiezi.ds;
 
-public class Stack {
+public class Stack<T> {
 }

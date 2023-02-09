@@ -1,4 +1,4 @@
 package com.qiezi.ds;
 
-public class Queue {
+public class Queue<T> {
 }
