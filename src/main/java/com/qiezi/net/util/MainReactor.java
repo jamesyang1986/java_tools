@@ -50,7 +50,7 @@ public class MainReactor implements Runnable {
     public void run() {
         while (!Thread.interrupted()) {
             try {
-                int events = selector.select(SELECTOR_WAIT_MS_INTERVAL);
+                selector.select(SELECTOR_WAIT_MS_INTERVAL);
                 Set<SelectionKey> keySet = selector.selectedKeys();
                 Iterator<SelectionKey> keysIterator = keySet.iterator();
                 while (keysIterator.hasNext()) {
@@ -58,7 +58,9 @@ public class MainReactor implements Runnable {
                     if (key.isAcceptable()) {
                         ServerSocketChannel serverSocketChannel = (ServerSocketChannel) key.channel();
                         SocketChannel socketChannel = serverSocketChannel.accept();
-                        getWorker().register(socketChannel);
+                        Connection conn = Connection.buildConnection(socketChannel, key);
+                        key.attach(conn);
+                        getWorker().register(conn);
                     }
                 }
             } catch (IOException e) {
@@ -69,7 +71,8 @@ public class MainReactor implements Runnable {
     }
 
     private WorkerReactor getWorker() {
-        int index = (int) (counter.getAndIncrement() % workerReactors.length);
+        int index = (int) (counter.getAndIncrement()
+                % workerReactors.length);
         return workerReactors[index];
     }
 }

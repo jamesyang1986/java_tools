@@ -41,6 +41,15 @@ public class WorkerReactor implements Runnable {
         }
     }
 
+    public void register(Connection connection) {
+        try {
+            connection.getSocketChannel().register(selector,
+                    SelectionKey.OP_READ | SelectionKey.OP_WRITE | SelectionKey.OP_CONNECT);
+        } catch (ClosedChannelException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @Override
     public void run() {
         while (!Thread.interrupted()) {
@@ -50,9 +59,10 @@ public class WorkerReactor implements Runnable {
                 Iterator<SelectionKey> keyIterator = keySet.iterator();
                 while (keyIterator.hasNext()) {
                     SelectionKey key = keyIterator.next();
+                    keyIterator.remove();
                     if (key.isReadable()) {
                         SocketChannel channel = (SocketChannel) key.channel();
-                        Connection connection = Connection.buildConnection(channel);
+                        Connection connection = Connection.buildConnection(channel, key);
                         handleRead(connection);
                     } else if (key.isConnectable()) {
                         //handle client socket connect event
@@ -60,7 +70,7 @@ public class WorkerReactor implements Runnable {
                     } else if (key.isWritable()) {
 
                     }
-                    keyIterator.remove();
+
                 }
 
 
