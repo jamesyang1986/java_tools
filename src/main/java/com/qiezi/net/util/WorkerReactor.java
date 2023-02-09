@@ -24,7 +24,7 @@ public class WorkerReactor extends Thread {
 
     private static Map<String, Connection> connMap = new ConcurrentHashMap<>();
 
-
+    private String name;
     public WorkerReactor() {
         super("worker-" + counter.getAndIncrement());
         try {
@@ -81,6 +81,7 @@ public class WorkerReactor extends Thread {
         Connection conn = (Connection) key.attachment();
         if (conn != null) {
             conn.setKey(key);
+            conn.setWorker(this);
         }
         if (key.isReadable()) {
             conn.read();

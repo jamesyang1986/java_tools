@@ -21,6 +21,14 @@ public class Connection {
 
     protected int magicNum = 0xAABB;
 
+    public WorkerReactor getWorker() {
+        return worker;
+    }
+
+    public void setWorker(WorkerReactor worker) {
+        this.worker = worker;
+    }
+
     public Connection(SocketChannel socketChannel, SelectionKey key) throws IOException {
         this.socketChannel = socketChannel;
         this.key = key;
@@ -104,7 +112,8 @@ public class Connection {
 
 
     private void send(String body) throws IOException {
-        String returnVal = "return:" + body;
+        String returnVal = "return:" + body + " worker:"
+                + this.getWorker().getName();
         int returnLen = returnVal.getBytes().length;
         byte[] sendHeader = genHeader(magicNum,
                 returnLen);

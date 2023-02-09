@@ -12,7 +12,6 @@ public class ClientTest {
 
     public static void main(String[] args) {
         ExecutorService es = Executors.newFixedThreadPool(10);
-
         int taskNum = 10;
         CountDownLatch countDownLatch = new CountDownLatch(taskNum);
         for (int i = 0; i < taskNum; i++) {
