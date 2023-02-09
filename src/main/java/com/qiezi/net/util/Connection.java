@@ -122,12 +122,12 @@ public class Connection {
         toSendData.put(sendHeader);
         toSendData.put(returnVal.getBytes());
         toSendData.flip();
+        writeQ.add(toSendData);
 
-        int writedBytes = this.socketChannel.write(toSendData);
-
-        if (writedBytes == 0 || toSendData.hasRemaining()) {
-            System.out.println("fail to write data.");
-        }
+//        int writedBytes = this.socketChannel.write(toSendData);
+//        if (writedBytes == 0 || toSendData.hasRemaining()) {
+//            System.out.println("fail to write data.");
+//        }
     }
 
 
@@ -143,6 +143,28 @@ public class Connection {
 
     public void doWrite() {
         this.key.interestOps(SelectionKey.OP_READ);
+        while (writeQ.size() != 0) {
+            ByteBuffer toSendData = writeQ.peek();
+            int writedBytes = 0;
+            try {
+                if (!this.socketChannel.isConnected()) {
+                    break;
+                }
+
+                writedBytes = this.socketChannel.write(toSendData);
+                if (writedBytes == 0 || toSendData.hasRemaining()) {
+                    System.out.println("fail to write data.");
+                    this.key.interestOps(SelectionKey.OP_WRITE | SelectionKey.OP_READ);
+                    this.key.selector().wakeup();
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+        }
+
+        this.key.interestOps(SelectionKey.OP_WRITE | SelectionKey.OP_READ);
+        this.key.selector().wakeup();
     }
 
     protected static byte[] genHeader(int magicNum, int len) {
