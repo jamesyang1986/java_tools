@@ -9,10 +9,11 @@ import java.util.concurrent.Executors;
 
 public class ClientTest {
     public static int magicNum = 0xAABB;
-
+    private static final int DEFAULT_TASK_NUM = 1;
+    private static final int DEFAULT_LOOP_COUNT = 100;
     public static void main(String[] args) {
         ExecutorService es = Executors.newFixedThreadPool(10);
-        int taskNum = 10;
+        int taskNum = DEFAULT_TASK_NUM;
         CountDownLatch countDownLatch = new CountDownLatch(taskNum);
         for (int i = 0; i < taskNum; i++) {
             final int clientTag = i;
@@ -30,7 +31,6 @@ public class ClientTest {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-
     }
 
 
@@ -40,7 +40,7 @@ public class ClientTest {
             socket = new Socket("127.0.0.1", 9090);
             socket.setTcpNoDelay(true);
 
-            for (int i = 0; i < 100; i++) {
+            for (int i = 0; i < DEFAULT_LOOP_COUNT; i++) {
                 String testStr = "client:" + clientTag + "hello:" + i;
                 int len = testStr.length();
 

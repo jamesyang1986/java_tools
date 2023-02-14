@@ -21,6 +21,8 @@ public class Connection {
 
     protected int magicNum = 0xAABB;
 
+    private boolean openSyncWrite = false;
+
     public WorkerReactor getWorker() {
         return worker;
     }
@@ -122,19 +124,32 @@ public class Connection {
         toSendData.put(sendHeader);
         toSendData.put(returnVal.getBytes());
         toSendData.flip();
-        writeQ.add(toSendData);
 
-//        int writedBytes = this.socketChannel.write(toSendData);
-//        if (writedBytes == 0 || toSendData.hasRemaining()) {
-//            System.out.println("fail to write data.");
-//        }
+        if (openSyncWrite) {
+            doSyncWrite(toSendData);
+        } else {
+            doAsyncWrite(toSendData);
+        }
+
+    }
+
+
+    private void doAsyncWrite(ByteBuffer toSendData) {
+        writeQ.add(toSendData);
+    }
+
+
+    private void doSyncWrite(ByteBuffer toSendData) throws IOException {
+        int writedBytes = this.socketChannel.write(toSendData);
+        if (writedBytes == 0 || toSendData.hasRemaining()) {
+            System.out.println("fail to write data.");
+        }
     }
 
 
     protected void checkMagic(ByteBuffer header) {
         byte magic1 = header.get();
         byte magic2 = header.get();
-
         int checkMagic = (magic1 & 0xFF) << 8 | (magic2 & 0xFF);
         if (checkMagic != magicNum) {
             throw new RuntimeException("wrong magic header.");
@@ -150,17 +165,17 @@ public class Connection {
                 if (!this.socketChannel.isConnected()) {
                     break;
                 }
-
                 writedBytes = this.socketChannel.write(toSendData);
                 if (writedBytes == 0 || toSendData.hasRemaining()) {
                     System.out.println("fail to write data.");
                     this.key.interestOps(SelectionKey.OP_WRITE | SelectionKey.OP_READ);
                     this.key.selector().wakeup();
+                } else {
+                    writeQ.remove(toSendData);
                 }
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-
         }
 
         this.key.interestOps(SelectionKey.OP_WRITE | SelectionKey.OP_READ);
